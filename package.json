@@ -1,0 +1,46 @@
+{
+  "name": "spc_soft",
+  "version": "1.0.0",
+  "description": "My offline application",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "start-django": "python manage.py runserver",
+    "build": "electron-builder",
+    "build-win": "electron-builder --win"
+  },
+  "author": "jeeva <premnagamani143@gmail.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^30.2.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.yourapp.id",
+    "productName": "spc_soft",
+    "files": [
+      "main.js",
+      "package.json",
+      "app/**/*"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "zip"
+      ],
+      "icon": "app/static/images/sai.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "app/static/images/sai.icns"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "app/static/images/sai1.png",
+      "maintainer": "jeeva <premnagamani143@gmail.com>"
+    }
+  }
+}

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Parameterwise Report</title>
+
+    <style>
+        .data-box {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            overflow-y: auto;
+        }
+        
+        .box {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+        }
+        .label {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 10px;
+        }
+        .value {
+            font-weight: bold;
+            font-size: 13px;
+        }
+        
+        th, td {
+            border: 1px solid #ccc;
+            text-align: center;
+            padding: 5px;
+            width: 100px;
+        }
+        
+        .table_data {
+            width: 5000px;
+        }
+        .table_data th:nth-child(3) {
+            width: 300px; /* Specific width for the 2nd th element */
+        }
+        .table_data th:nth-child(2) {
+            width: 200px; /* Specific width for the 2nd th element */
+        }
+        .table_data th:nth-child(1) {
+            width: 20px; /* Specific width for the 2nd th element */
+        }
+        .first-table td{
+            width: 250px;
+        }
+        #h1{
+            color: red; 
+            text-align: center;
+            margin-top: 0px;
+            margin-bottom: 0px;
+        }
+/* Dropdown menu style */
+#dropdownContent {
+    display: none; /* Hide dropdown content by default */
+}
+
+.dropdown {
+            position: absolute;
+            top: 10px;
+            right: 50px;
+            display: inline-block;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 120px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            left: -120px; /* Adjusted left position for the dropdown content */
+        }
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+            display: block;
+            background-color: #f1f1f1;
+            display: block;
+        }
+        
+
+    </style>
+</head>
+<body>
+    
+    <div class="dropdown" id="dropdown">
+        <div class="dropdown-content" id="dropdownContent">
+            <a href="#" onclick="exportToPDF(event)">Export as PDF</a>
+            <a href="#" onclick="exportToExcel(event)">Export as XLSX</a>
+        </div>
+        <button id="save_btn" onclick="toggleDropdown()">&#8285;</button>
+    </div>
+   
+    
+    <table class="first-table">
+        <h1 id="h1">Parameter Report</h1>
+        {% for data in parameterwise_values %}
+        <tr>
+            <td>
+                <span class="label">PARTMODEL:</span>
+                <span class="value">{{ data.part_model }}</span>
+            </td>
+            <td>
+                <span class="label">PARAMETER NAME:</span>
+                <span class="value">{{ data.parameter_name }}</span>
+            </td>
+            <td>
+                <span class="label">OPERATOR:</span>
+                <span class="value">{{ data.operator }}</span>
+            </td>
+            <td>
+                <span class="label">FROM DATE:</span>
+                <span class="value">{{ data.formatted_from_date }}</span>
+            </td>
+            <td>
+                <span class="label">TO DATE:</span>
+                <span class="value">{{ data.formatted_to_date }}</span>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span class="label">MACHINE:</span>
+                <span class="value">{{ data.machine }}</span>
+            </td>
+            <td>
+                <span class="label">VENDOR CODE:</span>
+                <span class="value">{{ data.vendor_code }}</span>
+            </td>
+            <td>
+                <span class="label">JOB NO:</span>
+                <span class="value">{{ data.job_no }}</span>
+            </td>
+            <td>
+                <span class="label">SHIFT:</span>
+                <span class="value">{{ data.shift }}</span>
+            </td>
+            <td>
+                <span class="label">CURRENT DATE:</span>
+                <span class="value">{{ data.current_date_time }}</span>
+            </td>
+        </tr>
+    
+        {% endfor %}
+    </table>
+    
+{% if no_results %}
+    <div class="data-box">
+        <p>No Data Found</p>
+    </div>
+{% else %}
+    <div class="data-box">
+        <div class="table_data">
+            {{ table_html | safe }}
+        </div>
+    </div>
+{% endif %}
+
+
+<!-- JavaScript to dynamically update status counts and print to console -->
+<script>
+  
+    function saveAsPDF() {
+        fetch("{% url 'paraReport' %}")
+        .then(response => response.blob())
+        .then(blob => {
+            const url = window.URL.createObjectURL(new Blob([blob]));
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'parameterwise_report.pdf';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+             // After exporting, hide the dropdown
+            hideDropdown();
+            // Prevent default link behavior (optional)
+            event.preventDefault();
+        });
+    }
+
+    function exportToExcel(event) {
+    fetch("{% url 'paraReport' %}")
+    .then(response => response.blob())
+    .then(blob => {
+        const url = window.URL.createObjectURL(new Blob([blob]));
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'parameterwise_report.xlsx';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+
+        // Prevent default link behavior (optional)
+        event.preventDefault();
+
+        // Hide the dropdown after exporting (if needed)
+        hideDropdown();
+    });
+}
+
+
+    function toggleDropdown() {
+    var dropdownContent = document.getElementById("dropdownContent");
+    dropdownContent.style.display = (dropdownContent.style.display === "block") ? "none" : "block";
+}
+
+// Function to hide the dropdown
+function hideDropdown() {
+    var dropdownContent = document.getElementById("dropdownContent");
+    dropdownContent.style.display = "none"; // Hide the dropdown content
+}
+
+ </script>
+</body>
+</html>
